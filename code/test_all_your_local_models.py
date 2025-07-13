@@ -3,6 +3,7 @@ import os
 import concurrent.futures
 import time
 import pyvista as pv
+from PIL import Image, ImageDraw, ImageFont
 
 # --- Configuration ---
 # List of Ollama models to test
@@ -38,9 +39,39 @@ def create_directories():
             os.makedirs(directory)
             print(f"Created directory: {directory}")
 
+def create_error_image(error_message, path, width=800, height=600):
+    """
+    Creates a white PNG image with the given error message written on it.
+    Args:
+        error_message (str): The error message to write on the image.
+        path (str): The path to save the output .png file.
+        width (int): The width of the image.
+        height (int): The height of the image.
+    """
+    try:
+        img = Image.new('RGB', (width, height), color = 'white')
+        d = ImageDraw.Draw(img)
+        
+        # Try to use a default font, fall back to a basic one if not found
+        try:
+            font = ImageFont.truetype("arial.ttf", 15)
+        except IOError:
+            font = ImageFont.load_default()
+            
+        # Add text wrapping for long messages
+        text = f"Render Failed:\n\n{error_message}"
+        d.text((10,10), text, fill=(0,0,0), font=font)
+        
+        img.save(path)
+        return f"Created error placeholder image at {path}"
+    except Exception as e:
+        return f"Failed to create error image: {e}"
+
+
 def render_obj_to_png(obj_path, render_path):
     """
     Renders an OBJ file to a PNG image using PyVista.
+    If rendering fails, it creates a placeholder image with the error.
     Args:
         obj_path (str): The path to the input .obj file.
         render_path (str): The path to save the output .png file.
@@ -49,8 +80,8 @@ def render_obj_to_png(obj_path, render_path):
     """
     try:
         # Ensure the OBJ file is not empty to avoid errors
-        if os.path.getsize(obj_path) == 0:
-            return False, "OBJ file is empty, skipping render."
+        if os.path.getsize(obj_path) < 5: # Check for a minimum size, not just non-zero
+            raise ValueError("OBJ file is empty or too small to be valid.")
 
         # Set up an off-screen plotter
         plotter = pv.Plotter(off_screen=True)
@@ -73,7 +104,11 @@ def render_obj_to_png(obj_path, render_path):
         # Clean up the plotter if it exists
         if 'plotter' in locals() and plotter is not None:
             plotter.close()
-        return False, f"Failed to render {obj_path}: {e}"
+        
+        # Create a placeholder image with the error message
+        error_msg = str(e)
+        create_error_image(error_msg, render_path)
+        return False, f"Failed to render {obj_path}. {create_error_image(error_msg, render_path)}"
 
 def generate_and_save(model_name):
     """
@@ -105,7 +140,7 @@ def generate_and_save(model_name):
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(generated_content)
         
-        # --- New Rendering Step ---
+        # --- Rendering Step ---
         render_file_name = f"{os.path.splitext(file_name)[0]}.png"
         render_path = os.path.join(RENDER_DIR, render_file_name)
         
@@ -116,7 +151,7 @@ def generate_and_save(model_name):
         if render_success:
             return f"[{model_name}] SUCCESS: Saved OBJ to {file_path} and PNG to {render_path} (took {duration:.2f}s)"
         else:
-            return f"[{model_name}] PARTIAL SUCCESS: Saved OBJ to {file_path}, but PNG render failed: {render_message} (took {duration:.2f}s)"
+            return f"[{model_name}] PARTIAL SUCCESS: Saved OBJ to {file_path}, but PNG render failed. {render_message} (took {duration:.2f}s)"
 
     except Exception as e:
         duration = time.time() - start_time if 'start_time' in locals() else 0
