@@ -1,6 +1,10 @@
 # cabin_horse_llm_benchmark (updated July 2025)
 See how LLM models perform when asked to generate a 3D model using a plaintext format called OBJ
 
+the prompt used:
+*generate the following scene using the OBJ file format as a text file:
+a 19th century wooden cabin with a horse standing next to it*
+
 # June 2025
 
 ## Claude Sonnet 4
