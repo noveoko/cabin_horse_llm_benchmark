@@ -17,3 +17,13 @@ See how LLM models perform when asked to generate a 3D model using a plaintext f
 
 ## ChatGPT (free version)
 <img width="1273" height="1105" alt="image" src="https://github.com/user-attachments/assets/670a3ed5-2971-4a6b-939b-197280f95463" />
+
+# July 2024
+
+## Chat GPT 4.0
+<img width="522" height="472" alt="image" src="https://github.com/user-attachments/assets/c7c3e17b-f356-4ff0-a250-9780e5315925" />
+
+## Claude Sonnet
+<img width="491" height="503" alt="image" src="https://github.com/user-attachments/assets/e902da76-c27b-4605-abe9-f90b3205c1b1" />
+
+
