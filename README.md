@@ -1,4 +1,4 @@
-# cabin_horse_llm_benchmark
+# cabin_horse_llm_benchmark (updated July 2025)
 See how LLM models perform when asked to generate a 3D model using a plaintext format called OBJ
 
 # June 2025
