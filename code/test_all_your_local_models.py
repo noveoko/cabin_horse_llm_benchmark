@@ -2,6 +2,7 @@ import ollama
 import os
 import concurrent.futures
 import time
+import pyvista as pv
 
 # --- Configuration ---
 # List of Ollama models to test
@@ -24,20 +25,59 @@ MODELS_TO_TEST = [
 # The prompt to be sent to each model
 PROMPT = "generate the following scene using the OBJ file format as a text file: a 19th century wooden cabin with a horse standing next to it"
 
-# The directory to save the output files
+# The directories to save the output files
 OUTPUT_DIR = "test_results"
+RENDER_DIR = "renders"
 
 # --- Main Script ---
 
-def create_output_directory():
-    """Creates the output directory if it doesn't already exist."""
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
-        print(f"Created directory: {OUTPUT_DIR}")
+def create_directories():
+    """Creates the output and render directories if they don't already exist."""
+    for directory in [OUTPUT_DIR, RENDER_DIR]:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+            print(f"Created directory: {directory}")
+
+def render_obj_to_png(obj_path, render_path):
+    """
+    Renders an OBJ file to a PNG image using PyVista.
+    Args:
+        obj_path (str): The path to the input .obj file.
+        render_path (str): The path to save the output .png file.
+    Returns:
+        tuple: A boolean indicating success, and a message.
+    """
+    try:
+        # Ensure the OBJ file is not empty to avoid errors
+        if os.path.getsize(obj_path) == 0:
+            return False, "OBJ file is empty, skipping render."
+
+        # Set up an off-screen plotter
+        plotter = pv.Plotter(off_screen=True)
+        
+        # Read the mesh from the file
+        mesh = pv.read(obj_path)
+        
+        # Add the mesh to the plotter with some basic styling
+        plotter.add_mesh(mesh, color='tan', show_edges=True)
+        
+        # Set a standard isometric camera view
+        plotter.camera_position = 'iso'
+        
+        # Take a screenshot
+        plotter.screenshot(render_path)
+        plotter.close()
+        return True, f"Rendered to {render_path}"
+
+    except Exception as e:
+        # Clean up the plotter if it exists
+        if 'plotter' in locals() and plotter is not None:
+            plotter.close()
+        return False, f"Failed to render {obj_path}: {e}"
 
 def generate_and_save(model_name):
     """
-    Sends the prompt to a specific model, gets the response, and saves it to a file.
+    Sends a prompt to a model, saves the .obj response, and renders it to .png.
     Args:
         model_name (str): The name of the model to use.
     Returns:
@@ -55,9 +95,7 @@ def generate_and_save(model_name):
 
         # Extract the content from the response
         generated_content = response['message']['content']
-        end_time = time.time()
-        duration = end_time - start_time
-
+        
         # Sanitize the model name for the filename
         safe_model_name = model_name.replace(":", "_")
         file_name = f"{safe_model_name}_July_2025.obj"
@@ -66,20 +104,30 @@ def generate_and_save(model_name):
         # Save the generated content to the file
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(generated_content)
-
-        return f"[{model_name}] SUCCESS: Saved to {file_path} (took {duration:.2f}s)"
+        
+        # --- New Rendering Step ---
+        render_file_name = f"{os.path.splitext(file_name)[0]}.png"
+        render_path = os.path.join(RENDER_DIR, render_file_name)
+        
+        render_success, render_message = render_obj_to_png(file_path, render_path)
+        
+        duration = time.time() - start_time
+        
+        if render_success:
+            return f"[{model_name}] SUCCESS: Saved OBJ to {file_path} and PNG to {render_path} (took {duration:.2f}s)"
+        else:
+            return f"[{model_name}] PARTIAL SUCCESS: Saved OBJ to {file_path}, but PNG render failed: {render_message} (took {duration:.2f}s)"
 
     except Exception as e:
-        end_time = time.time()
-        duration = end_time - start_time
+        duration = time.time() - start_time if 'start_time' in locals() else 0
         return f"[{model_name}] FAILED: {e} (after {duration:.2f}s)"
 
 def main():
     """
-    Main function to run the concurrent model testing.
+    Main function to run the concurrent model testing and rendering.
     """
-    print("--- Starting Concurrent Ollama Model Test ---")
-    create_output_directory()
+    print("--- Starting Concurrent Ollama Model Test & Render ---")
+    create_directories()
 
     # Use a ThreadPoolExecutor to run the tests in parallel
     with concurrent.futures.ThreadPoolExecutor() as executor:
