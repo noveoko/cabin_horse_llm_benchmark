@@ -7,6 +7,9 @@ a 19th century wooden cabin with a horse standing next to it*
 
 # June 2025
 
+## XAi Grok 4 (Thank you to (Sentdex)[https://github.com/Sentdex] for this submission
+<img width="739" height="607" alt="image" src="https://github.com/user-attachments/assets/23245f44-a111-47d2-abc0-b6bc82ddb773" />
+
 ## Claude Sonnet 4
 <img width="1377" height="1006" alt="image" src="https://github.com/user-attachments/assets/dcb958f4-74ce-4ff6-b753-c26e8bc0101f" />
 
