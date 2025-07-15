@@ -1,4 +1,4 @@
-# cabin_horse_llm_benchmark (updated July 2025)
+# Horse Cabin llm benchmark #horsecabin (updated July 2025)
 See how LLM models perform when asked to generate a 3D model using a plaintext format called OBJ
 
 Note on renders: When rendering these I always (in 2025) use the Microsfot 3D viewer app. This app is rather strict in the placement of the ground plane. In order to make this competition fair I don't adjust the ground plane (or anything in the model for that matter) only posting a "best angle" possible given the image.
