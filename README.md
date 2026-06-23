@@ -8,6 +8,11 @@ the prompt used:
 **generate the following scene using the OBJ file format as a text file:
 a 19th century wooden cabin with a horse standing next to it**
 
+# July 2026
+
+# SpaceX: SuperGrok
+<img width="724" height="556" alt="image" src="https://github.com/user-attachments/assets/6ad8e641-b4ab-4f00-af5e-1368ad3146fe" />
+
 # June 2025
 
 ## XAi Grok 4 (Thank you to (Sentdex)[https://github.com/Sentdex] for this submission
